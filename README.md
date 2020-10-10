@@ -24,8 +24,11 @@ You can also select the IP you want to use through the following flags
 Feel free to fix any bugs and make changes to the script
 
 ## To Do List
+
 -Make the output more descriptive
 -Make it installable
 -Add more Shells
+
+
 
 By VanshD<sup>(TM)</sup>
