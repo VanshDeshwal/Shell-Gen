@@ -65,9 +65,9 @@ elif [ "$rev_shell" == "xterm" ]
 else
 	echo not defined
 fi
-echo -e "using ip: \e[1;35m$ip4\n"
-echo "shell:"
-echo "$rev_shell"
+echo -e "Using IP: \e[1;35m$ip4\e[0m \n"
+echo "Shell:"
+echo -e "\e[1;38;5;220m$rev_shell\e[0m \n"
 
 }
 
@@ -175,9 +175,10 @@ then
 
 	if [ $url ]
 	then
-		echo url-encoded shell:
-		urlencode "$rev_shell"
-		echo -e "\n"
+		echo Url-encoded Shell:
+		last= urlencode "$rev_shell" 2>/dev/null
+		# echo  -e "\e[1;38;5;10m$last\e[0m \n"
+		
 	# else
 	# 	echo "Enter the shell you want"
 	# 	echo "Try -h for more options"	
@@ -185,4 +186,4 @@ then
 
 fi
 
-
+# echo -e "\e[1;38;5;220m$rev_shell\e[0m \n"
