@@ -46,10 +46,12 @@ Feel free to fix any bugs and make changes to the script
 
 ## To Do List
 
--Make the output more descriptive
--Make it installable
--Add more Shells
+<div>-Make the output more descriptive</div>
+<div>-Make it installable</div>
+<div>-Add more Shells</div>
 
+## LICENSE
 
+MIT License
 
 By VanshD<sup>(TM)</sup>
