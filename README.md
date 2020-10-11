@@ -19,6 +19,14 @@ You can also select the IP you want to use through the following flags
 - **-v**   - This will **use the virtual ip address that Hack The Box, Try Hack Me or any other similar website provided you**
 - **-l**   - This will **use you local ip address in case you are working with a Vulnhub Machine**
 - **-u**   - Adding this flag will give you a url encoded version of the shell along with the shell itself
+- **-x**   - This will stop the script from starting a listner for you shell
+- **-p**   - You can specify the port you want to use for the reverse shell
+- **-o**   - Show the available Options/Shells
+
+## Dependencies
+This script copies the reverse shell to you clipboard automatically so you would need x-clip for this functionality
+
+```sudo apt install xclip```
 
 ## Improvements and modifications
 Feel free to fix any bugs and make changes to the script
