@@ -9,7 +9,7 @@ SCRIPTPATH=$(dirname "$SCRIPT")
 SCRIPTNAME="$0"
 ARGS="$@"
 BRANCH="main"
-
+update=0
 self_update() {
     cd $SCRIPTPATH
     git fetch
@@ -19,10 +19,9 @@ self_update() {
         git pull --force
         git checkout $BRANCH
         git pull --force
-        # Now exit this old instance
-        exit 1
+
     }
-    echo "Already the latest version2."
+    echo "Already the latest version3."
 }
 
 main() {
