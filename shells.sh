@@ -8,6 +8,8 @@ error=$(cat /sys/class/net/tun0/operstate 2>/dev/null)
 e=0
 interface=0
 local=0
+thm=0
+htb=0
 
 for (( i = 0; "$error" == "unknown" ; i++ )) 
 do
@@ -66,10 +68,12 @@ setip(){
 			check=$(/sbin/ip -o -4 addr list tun$i | awk '{print $4}' | cut -d/ -f1 | cut -b 1-5)
 			if [ "$check" == "10.2." ]
 			then
+				thm=1
 				thmip=$ip4
 				
 			elif [ "$check" == "10.10" ]
 			then
+				htb=1
 				htbip=$ip4
 				
 			else 
@@ -86,16 +90,12 @@ assignip(){
 	
 
 
-
-
-
-if [ "$local" == "0" ]
+if [ $e -gt 0 ] && [ "$interface" == "0" ]
 then
-if [ $e -gt 1 ] && [ "$interface" == "0" ]
-then
-	echo -e "Looks like you are connected to multiple virtual network"
-	if [ thmip ] && [ htbip ]
+
+	if [ "$thm" == "1" ] && [ "$htb" == "1" ]
 		then
+			echo -e "Looks like you are connected to multiple virtual network"
 			echo "Which ip you want to use"
 			echo "1. THM: $thmip"
 			echo "2. HTB: $htbip"
@@ -113,12 +113,12 @@ then
 			fi
 
 			
-		elif [ htbip ]
+		elif [ "$htb" == "1" ]
 			then
 
 				echo "Using HTB IP..."
 				ip4=$htbip
-		elif [ thmip ]
+		elif [ "$thm" == "1" ]
 			then
 
 				echo "Using thm ip"
@@ -127,12 +127,12 @@ then
 elif [ "$interface" == "1" ]
 	then
 		ip4=$(/sbin/ip -o -4 addr list $inter | awk '{print $4}' | cut -d/ -f1)
+else 
+
+	ip4=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
 fi
-elif [ "$local" == "1" ]
-	then
-		ip4=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
-fi
-echo "fina ip assigned is $ip4"
+
+
 }
 
 assign() {
@@ -233,12 +233,12 @@ while :; do
 				echo -e "$options"
 				exit
 				;;
-           -l|--local)       # Takes an option argument; ensure it has been specified.
+           # -l|--local)       # Takes an option argument; ensure it has been specified.
                
-               local=1
-               # echo "Using local ip address: $ip4"
+           #     local=1
+           #     # echo "Using local ip address: $ip4"
                
-               ;;
+           #     ;;
 
            -v|--virtual)
 				
