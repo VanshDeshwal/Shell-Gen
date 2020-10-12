@@ -3,31 +3,13 @@
 #command to grep the tun0 ip(htb or thm virtual ip)
 
 
-
-SCRIPT=$(readlink -f "$0")
-SCRIPTPATH=$(dirname "$SCRIPT")
-SCRIPTNAME="$0"
-ARGS="$@"
-BRANCH="main"
-update=0
-self_update() {
-    cd $SCRIPTPATH
-    git fetch
-
-    [ -n $(git diff --name-only origin/$BRANCH | grep $SCRIPTNAME) ] && {
-        echo "Found a new version of me, updating myself..."
-        git pull --force
-        git checkout $BRANCH
-        git pull --force
-
-    }
-    echo "Already the latest version3."
-}
-
-
-
-
-
+update=$(git pull)
+if [ "$update" == "Already up to date" ]
+	then
+		main 
+	else
+		self_update
+fi
 
 
 
@@ -382,7 +364,7 @@ while :; do
 
 
 
-
+main(){
 
 if [ $sh ]
 then
@@ -419,4 +401,5 @@ then
 	fi
 fi
 
+}
 
