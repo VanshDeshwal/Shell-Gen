@@ -2,7 +2,16 @@
 
 #command to grep the tun0 ip(htb or thm virtual ip)
 
-
+a=5
+#random comments
+if [ $a = 4 ]
+then
+	echo "hello"
+else
+	echo not hello
+fi
+#why this isnt thinking that it is a new branch
+#maybe the time stamp interval between 2 commits is very short
 
 
 SCRIPT=$(readlink -f "$0")
