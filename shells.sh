@@ -8,7 +8,7 @@ if [ "$update" == "Already up to date" ]
 	then
 		main 
 	else
-		self_update
+		echo "need update"
 fi
 
 
