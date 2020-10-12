@@ -2,7 +2,7 @@
 
 #command to grep the tun0 ip(htb or thm virtual ip)
 
-
+self_update(){
 update=$(git pull 2>/dev/null)
 if [ "$update" == "Already up to date" ]
 	then
@@ -11,6 +11,7 @@ if [ "$update" == "Already up to date" ]
 		echo "Update Complete"
 
 fi
+}
 
 
 
@@ -366,6 +367,7 @@ while :; do
 
 
 main(){
+	self_update
 
 if [ $sh ]
 then
