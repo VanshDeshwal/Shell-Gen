@@ -24,12 +24,9 @@ self_update() {
     echo "Already the latest version3."
 }
 
-main() {
-   echo "Running"
-}
 
-self_update
-main
+
+
 
 
 
@@ -389,7 +386,7 @@ while :; do
 
 if [ $sh ]
 then
-	
+	self_update
 	setip
 
 	
