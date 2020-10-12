@@ -11,12 +11,12 @@ if [ "$update" == "Already up to date." ]
 		echo "Update Complete"
 
 fi
-
+updated=1
 main
 }
 
 
-
+updated=0
 error=$(cat /sys/class/net/tun0/operstate 2>/dev/null)
 e=0
 interface=0
@@ -407,5 +407,7 @@ then
 fi
 
 }
+if [ "$updated" == 0 ]
 self_update
+fi
 
