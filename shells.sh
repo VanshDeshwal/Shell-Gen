@@ -3,18 +3,25 @@
 #command to grep the tun0 ip(htb or thm virtual ip)
 
 self_update(){
-update=$(git pull 2>/dev/null)
-if [ "$update" == "Already up to date." ]
+
+update=0
+
+if [ "$update" == "0" ]
 	then
-		echo "Up to date"
-	else
-		echo "Update Complete"
+		command=$(git pull 2>/dev/null)
+		if [ "$command" == "Already up to date." ]
+			then
+				echo "Up to date"
+		
+		else
+			echo "Update Complete"
+		fi
+	update=1
 
 fi
-updated=1
-main
-}
 
+
+}
 
 updated=0
 error=$(cat /sys/class/net/tun0/operstate 2>/dev/null)
@@ -368,7 +375,7 @@ while :; do
 
 
 
-main(){
+
 	
 
 if [ $sh ]
@@ -406,8 +413,6 @@ then
 	fi
 fi
 
-}
-if [ "$updated" == 0 ]
-self_update
-fi
+
+
 
