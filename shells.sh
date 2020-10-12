@@ -22,7 +22,7 @@ self_update() {
         # Now exit this old instance
         exit 1
     }
-    echo "Already the latest version."
+    echo "Already the latest version2."
 }
 
 main() {
