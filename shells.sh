@@ -3,12 +3,13 @@
 #command to grep the tun0 ip(htb or thm virtual ip)
 
 
-update=$(git pull)
+update=$(git pull 2>/dev/null)
 if [ "$update" == "Already up to date" ]
 	then
 		main 
 	else
-		echo "need update"
+		echo "Update Complete"
+		main
 fi
 
 
