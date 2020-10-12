@@ -11,7 +11,7 @@ local=0
 thm=0
 htb=0
 
-for (( i = 0; "$error" == "unknown" ; i++ )) 
+for (( i = 0; $error; i++ )) 
 do
   
   error=$(cat /sys/class/net/tun$i/operstate 2>/dev/null)
@@ -21,6 +21,7 @@ do
     break
   fi
   e=$((e+1))
+  echo "e is: $e"
 done
 
 
@@ -38,6 +39,7 @@ BLUE="34"
 ENDCOLOR="\e[0m"
 BOLDPURPLE="\e[1;${PURPLE}m"
 BOLDBLUE="\e[1;${BLUE}m"
+RED="\e[31m"
 
 urlencode() {
     # urlencode <string>
@@ -126,7 +128,10 @@ then
 	fi
 elif [ "$interface" == "1" ]
 	then
+		test -e /sys/class/net/$inter/operstate || echo "No such device" ; exit
 		ip4=$(/sbin/ip -o -4 addr list $inter | awk '{print $4}' | cut -d/ -f1)
+
+		
 else 
 
 	ip4=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
@@ -137,7 +142,7 @@ fi
 
 assign() {
 	
-	assignip
+assignip
 
 
 
@@ -197,7 +202,9 @@ elif [ "$rev_shell" == "xterm" ]
 
 	
 else
-	echo not defined
+	echo "Invalid Format"
+	echo -e $options
+	exit 1
 
 fi
 
@@ -207,7 +214,9 @@ echo -e "Using IP: ${BOLDPURPLE}$ip4${ENDCOLOR} \n"
 echo -e "Using Port: ${BOLDBLUE}$pt${ENDCOLOR} \n"
 echo "Shell:"
 echo -e "\e[1;38;5;220m$rev_shell${ENDCOLOR} \n"
+command_not_found_handle() { echo "Install xclip for auto copy"; return 127; }
 echo -e "$rev_shell" | xclip -selection clipboard
+unset command_not_found_handle
 }
 
 
@@ -278,7 +287,7 @@ while :; do
 					pt="$2"
 					shift
 				else
-					printf 'Port not specified, using default port 1234 %s\n' >&2 
+					echo -e "${RED}Port not specified, using default port 1234${ENDCOLOR}" 
 				fi
 
 			   ;;
@@ -287,17 +296,22 @@ while :; do
 
 			   ;;
 		   -i)
-				interface=1
-				inter=$2
-				
+				if [ "$2" ]
+				then
+				command_not_found_handle() { echo "Install xclip for auto copy" ; return 0; }
+					interface=1
+					inter="$2"
+				unset command_not_found_handle
+			
 				shift
+			fi
 			   ;;
            --)              # End of all options.
                shift
                break
                ;;
            -?*)
-               printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+               echo -e "${RED}WARN: Unknown option (ignored): $1${ENDCOLOR}"
                ;;
            *)               # Default case: No more options, so break out of the loop.
                break
