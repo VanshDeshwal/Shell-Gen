@@ -367,7 +367,7 @@ while :; do
    done
 
 
-self_update
+
 main(){
 	
 
@@ -407,4 +407,5 @@ then
 fi
 
 }
+self_update
 
