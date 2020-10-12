@@ -31,6 +31,7 @@ local=0
 thm=0
 htb=0
 
+
 for (( i = 0; $error; i++ )) 
 do
   
@@ -155,9 +156,12 @@ then
 	fi
 elif [ "$interface" == "1" ]
 	then
-		test -e /sys/class/net/$inter/operstate || echo "No such device" ; exit
+		
+		test -e /sys/class/net/$inter/operstate ||  exit
+		
 		ip4=$(/sbin/ip -o -4 addr list $inter | awk '{print $4}' | cut -d/ -f1)
 
+        echo "$ip4"
 		
 else 
 
@@ -380,10 +384,11 @@ while :; do
 
 if [ $sh ]
 then
+	echo "Checking for updates..."
 	self_update
 	setip
 
-	
+
 	assign
 
 	if [ $url ]
