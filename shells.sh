@@ -4,13 +4,14 @@
 
 self_update(){
 update=$(git pull 2>/dev/null)
-if [ "$update" == "Already up to date" ]
+if [ "$update" == "Already up to date." ]
 	then
 		echo "Up to date"
 	else
 		echo "Update Complete"
 
 fi
+main
 }
 
 
@@ -365,9 +366,9 @@ while :; do
    done
 
 
-
+self_update
 main(){
-	self_update
+	
 
 if [ $sh ]
 then
