@@ -35,6 +35,7 @@ You can also select the **IP** and **PORT** you want to use through the followin
 - **-x**   - This will **stop** the script from starting a **listner** for you shell
 - **-p**   - You can specify the **port you want to use** for the reverse shell
 - **-o**   - Show the **available Options/Shells**
+- **-i**   - Choose any other i**nterface** you want to use
 
 ## Dependencies
 This script copies the reverse shell to you clipboard automatically so you would need x-clip for this functionality
