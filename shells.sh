@@ -11,6 +11,7 @@ if [ "$update" == "Already up to date." ]
 		echo "Update Complete"
 
 fi
+
 main
 }
 
@@ -343,10 +344,10 @@ while :; do
 		   -i)
 				if [ "$2" ]
 				then
-				command_not_found_handle() { echo "Install xclip for auto copy" ; return 0; }
+				
 					interface=1
 					inter="$2"
-				unset command_not_found_handle
+				
 			
 				shift
 			fi
