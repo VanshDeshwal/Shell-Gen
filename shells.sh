@@ -6,10 +6,10 @@
 update=$(git pull 2>/dev/null)
 if [ "$update" == "Already up to date" ]
 	then
-		main 
+		echo "Up to date"
 	else
 		echo "Update Complete"
-		main
+
 fi
 
 
