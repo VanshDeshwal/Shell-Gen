@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #command to grep the tun0 ip(htb or thm virtual ip)
-
+# function to update the script
 self_update(){
 
 update=0
