@@ -11,6 +11,7 @@
 #From github
 git clone https://github.com/VanshDeshwal/Shell-Gen.git
 ```
+**Note:** Do not "wget" the script, git clone is recommended
 **Usage:**
  ```
  ./shells.sh -s<shell>
@@ -24,9 +25,9 @@ git clone https://github.com/VanshDeshwal/Shell-Gen.git
 ## Basic Information
 The goal of this script is to generate various types of reverse shells **preconfigured** to your needs quickly.
 This script doesn't have any dependencies except **xclip** that is optional.
-Shell-Gen uses **color codings** to keep you focus on the important stuff
+Shell-Gen uses **color codings** to keep you focused on the important stuff
 The script tries to **automatically identify if you are connected to open vpn or not** to give you a quick hasstle free personalised shell
-You can also select the **IP** and **PORT** you want to use through the following flags
+You can also select the **Interface** and **PORT** you want to use through the following flags
 
 **Other parameters:**
 - **-v**   - This will **use the virtual ip address that Hack The Box, Try Hack Me or any other similar website provided you**
@@ -35,7 +36,7 @@ You can also select the **IP** and **PORT** you want to use through the followin
 - **-x**   - This will **stop** the script from starting a **listner** for you shell
 - **-p**   - You can specify the **port you want to use** for the reverse shell
 - **-o**   - Show the **available Options/Shells**
-- **-i**   - Choose any other i**nterface** you want to use
+- **-i**   - Choose any other **interface** you want to use
 
 ## Dependencies
 This script copies the reverse shell to you clipboard automatically so you would need x-clip for this functionality
