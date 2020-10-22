@@ -2,6 +2,11 @@
 
 #command to grep the tun0 ip(htb or thm virtual ip)
 # function to update the script
+
+#curl -s --max-time 1 -o /dev/null -I -w "%{http_code}" http://10.10.10.10
+#200 if connected, 000 is not
+
+
 self_update(){
 
 update=0
@@ -32,25 +37,6 @@ thm=0
 htb=0
 
 
-for (( i = 0; $error; i++ )) 
-do
-  
-  error=$(cat /sys/class/net/tun$i/operstate 2>/dev/null)
-  
-  if [ "$error" != "unknown" ]
-  then
-    break
-  fi
-  e=$((e+1))
-  echo "e is: $e"
-done
-
-
-
-
-
-
-#extra comments
 
 pt=1234
 x=0 
@@ -88,88 +74,39 @@ die() {
 	exit 1
 }
 
-setip(){
-	
-    if [ $e -gt 0 ]
+ded() {
+	echo "interface $inter not found"
+	exit 1
+}
+
+
+assignip(){
+
+#################################
+if [ "$interface" == "1" ]
+then
+	test -e /sys/class/net/$inter/operstate ||  ded
+		
+	ip4=$(/sbin/ip -o -4 addr list $inter | awk '{print $4}' | cut -d/ -f1)
+	# echo $ip4
+
+elif [ "$interface" == "0" ]
+then
+	newcheck=$(curl -s --max-time 1 -o /dev/null -I -w "%{http_code}" http://10.10.10.10)
+	if [ "$newcheck" == "200" ]
 	then
-		for (( i = 0; i < $e ; i++ )); do
-			
-			ip4=$(/sbin/ip -o -4 addr list tun$i | awk '{print $4}' | cut -d/ -f1 )
-			check=$(/sbin/ip -o -4 addr list tun$i | awk '{print $4}' | cut -d/ -f1 | cut -b 1-5)
-			if [ "$check" == "10.2." ]
-			then
-				thm=1
-				thmip=$ip4
-				
-			elif [ "$check" == "10.10" ]
-			then
-				htb=1
-				htbip=$ip4
-				
-			else 
-				unknown$i=$ip4
-			fi
-		done
-		ip4=$(/sbin/ip -o -4 addr list tun0 | awk '{print $4}' | cut -d/ -f1)
+		
+		echo "THM IP Detected"
+		ip4=$(curl http://10.10.10.10/whoami 2>/dev/null) 
+		
+	
 	else
 		ip4=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
 	fi
-}
-
-assignip(){
-	
-
-
-if [ $e -gt 0 ] && [ "$interface" == "0" ]
-then
-
-	if [ "$thm" == "1" ] && [ "$htb" == "1" ]
-		then
-			echo -e "Looks like you are connected to multiple virtual network"
-			echo "Which ip you want to use"
-			echo "1. THM: $thmip"
-			echo "2. HTB: $htbip"
-
-			
-			read customip
-			if [ "$customip" == "1" ] || [ "$customip" == "THM" ] || [ "$customip" == "thm" ]
-				then
-					ip4=$thmip
-				elif [ "$customip" == "2" ] || [ "$customip" == "HTB" ] || [ "$customip" == "htb" ]
-					then
-						ip4=$htbip
-				else
-					echo "please choose from the given options"
-			fi
-
-			
-		elif [ "$htb" == "1" ]
-			then
-
-				echo "Using HTB IP..."
-				ip4=$htbip
-		elif [ "$thm" == "1" ]
-			then
-
-				echo "Using thm ip"
-				ip4=$thmip
-	fi
-elif [ "$interface" == "1" ]
-	then
-		
-		test -e /sys/class/net/$inter/operstate ||  exit
-		
-		ip4=$(/sbin/ip -o -4 addr list $inter | awk '{print $4}' | cut -d/ -f1)
-
-        echo "$ip4"
-		
-else 
-
-	ip4=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
 fi
-
-
 }
+
+
 
 assign() {
 	
@@ -386,10 +323,8 @@ if [ $sh ]
 then
 	echo "Checking for updates..."
 	self_update
-	setip
-
-
 	assign
+
 
 	if [ $url ]
 	then
@@ -417,7 +352,4 @@ then
 		fi
 	fi
 fi
-
-
-## finally added a auto update system
 
