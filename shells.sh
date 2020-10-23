@@ -203,7 +203,7 @@ then
 	echo -e "\e[1;38;5;220mCheck your current directory for a \" c-shell.c\" file${ENDCOLOR}"
 elif [ "$rev_shell" == "php_upload" ]
 	then
-		echo -e "\e[1;38;5;220mCheck your current directory for a \" php-shell.c\" file${ENDCOLOR}"
+		echo -e "\e[1;38;5;220mCheck your current directory for a \" php-shell.php\" file${ENDCOLOR}"
 else
 
 echo -e "\e[1;38;5;220m$rev_shell${ENDCOLOR} \n"
